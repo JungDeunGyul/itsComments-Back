@@ -3,6 +3,7 @@ const router = express.Router();
 
 const { User } = require("../Models/User");
 const verifyToken = require("../middleware/verifyToken");
+const isValidGoogleProfileImageUrl = require("../utiles/imageUtile");
 
 router.patch("/user", verifyToken, async (req, res, next) => {
   try {
@@ -12,7 +13,15 @@ router.patch("/user", verifyToken, async (req, res, next) => {
       return res.status(404).json({ message: "User not found" });
     }
 
-    user.icon = req.body.icon || user.icon;
+    const iCon = req.body.icon;
+
+    if (isValidGoogleProfileImageUrl(iCon)) {
+      user.icon = iCon;
+    } else if (iCon.endsWith(".png")) {
+      user.icon = iCon;
+    } else {
+      return res.status(400).json({ message: "Invalid image format." });
+    }
 
     await user.save();
 
