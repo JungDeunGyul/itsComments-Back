@@ -29,7 +29,7 @@ app.use(
     methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
     credentials: true,
     preflightContinue: true,
-    optionsSuccessStatus: 204,
+    optionsSuccessStatus: 200,
   }),
 );
 

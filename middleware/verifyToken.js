@@ -12,11 +12,13 @@ const verifyToken = async (req, res, next) => {
 
     if (!accessToken || !refreshToken) {
 <<<<<<< HEAD
+<<<<<<< HEAD
       return res.send({ result: "fail", message: "The token does not exist." });
     }
 
     let decodedData;
 
+<<<<<<< HEAD
     try {
       decodedData = await admin.auth().verifyIdToken(accessToken);
     } catch (error) {
@@ -33,15 +35,33 @@ const verifyToken = async (req, res, next) => {
     return res.send({ result: "fail", message: error.message });
 =======
       return res.send({ result: "fail", message: "All tokens have expired." });
+=======
+      return res.send({ result: "fail", message: "The token does not exist." });
+>>>>>>> a9e94e5 (refactor: Modify the verifyToken logic)
     }
 
-    const decodedData = await admin.auth().verifyIdToken(accessToken);
-    req.user = decodedData;
-
+    let decodedData;
+=======
+>>>>>>> 09a6161 (style: Add line spacing)
+    try {
+      decodedData = await admin.auth().verifyIdToken(accessToken);
+    } catch (error) {
+      if (error.code === "auth/id-token-expired") {
+        const user = await admin.auth().verifyIdToken(refreshToken);
+        const newAccessToken = await user.getIdToken();
+        decodedData = await admin.auth().verifyIdToken(newAccessToken);
+      } else {
+        return res.send({ result: "fail", message: error.message });
+      }
+    }
     next();
   } catch (error) {
+<<<<<<< HEAD
     return res.status(401).json({ error: "Unauthorized - Invalid tokens" });
 >>>>>>> 58e3390 (feat: create login router and verifyToken middleware and add cors)
+=======
+    return res.send({ result: "fail", message: error.message });
+>>>>>>> a9e94e5 (refactor: Modify the verifyToken logic)
   }
 };
 
