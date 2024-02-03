@@ -11,6 +11,7 @@ const verifyToken = async (req, res, next) => {
     const refreshToken = req.cookies.refreshToken;
 
     if (!accessToken || !refreshToken) {
+<<<<<<< HEAD
       return res.send({ result: "fail", message: "The token does not exist." });
     }
 
@@ -30,6 +31,17 @@ const verifyToken = async (req, res, next) => {
     next();
   } catch (error) {
     return res.send({ result: "fail", message: error.message });
+=======
+      return res.send({ result: "fail", message: "All tokens have expired." });
+    }
+
+    const decodedData = await admin.auth().verifyIdToken(accessToken);
+    req.user = decodedData;
+
+    next();
+  } catch (error) {
+    return res.status(401).json({ error: "Unauthorized - Invalid tokens" });
+>>>>>>> 58e3390 (feat: create login router and verifyToken middleware and add cors)
   }
 };
 
