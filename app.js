@@ -8,7 +8,7 @@ const cookieParser = require("cookie-parser");
 const logger = require("morgan");
 
 const indexRouter = require("./routes/index");
-const adminProfileRouter = require("./routes/adminProfile");
+const editProfileRouter = require("./routes/editProfile");
 
 const app = express();
 
@@ -19,7 +19,7 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, "public")));
 
 app.use("/", indexRouter);
-app.use("/user", adminProfileRouter);
+app.use("/user", editProfileRouter);
 
 app.use(function (req, res, next) {
   next(createError(404));
