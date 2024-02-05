@@ -1,8 +1,7 @@
 require("dotenv").config();
-require("./loaders/mongoose");
 
-const createError = require("http-errors");
 const express = require("express");
+<<<<<<< HEAD
 const path = require("path");
 const cookieParser = require("cookie-parser");
 const logger = require("morgan");
@@ -55,5 +54,14 @@ app.use(function (err, req, res, next) {
   res.status(err.status || 500);
   res.render("error");
 });
+=======
+const appLoader = require("./src/loaders/index");
+
+const app = express();
+
+(async () => {
+  await appLoader(app);
+})();
+>>>>>>> d07b407 (refactor: Refactor code structure and directory organization)
 
 module.exports = app;
