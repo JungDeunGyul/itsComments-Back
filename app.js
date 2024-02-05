@@ -25,7 +25,11 @@ app.use(express.static(path.join(__dirname, "public")));
 
 app.use(
   cors({
-    origin: "http://localhost:5173",
+    origin: [
+      process.env.CLIENT_URL,
+      process.env.EXTENSION_URL,
+      process.env.SECOND_EXTENSION_URL,
+    ],
     methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
     credentials: true,
     preflightContinue: true,
