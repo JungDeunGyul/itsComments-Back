@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+
 const { Schema } = mongoose;
 
 const reCommentSchema = new mongoose.Schema({
@@ -13,11 +14,11 @@ const commentSchema = new mongoose.Schema({
   postDate: { type: Date, required: true },
   postUrl: { type: String, required: true },
   postCoordinate: {
-    x: { type: int, required: true },
-    y: { type: int, required: true },
+    x: { type: Number, required: true },
+    y: { type: Number, required: true },
   },
-  imgpath: { type: string, required: true },
-  allowPublic: { type: boolean, required: true },
+  imgpath: { type: String, required: true },
+  allowPublic: { type: Boolean, required: true },
   publicUsers: [{ type: Schema.Types.ObjectId, ref: "User" }],
   maillingAddress: [{ type: String }],
   reComments: [reCommentSchema],
