@@ -91,11 +91,12 @@ router.delete("/:commentId", async (req, res, next) => {
   try {
     const commentId = req.params.commentId;
     const comment = await Comment.findById(commentId);
-    const user = await User.findById(comment.creator);
 
     if (!comment) {
       return res.status(404).json({ message: "No such comment was found." });
     }
+
+    const user = await User.findById(comment.creator);
 
     if (!user) {
       return res.status(404).json({ message: "Creator not found" });
