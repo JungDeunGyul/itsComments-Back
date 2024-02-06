@@ -10,12 +10,16 @@ const { User } = require("../models/User");
 >>>>>>> d07b407 (refactor: Refactor code structure and directory organization):src/routes/login.js
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> 58e3390 (feat: create login router and verifyToken middleware and add cors)
 router.post("/", async (req, res, next) => {
 =======
 router.post("/", async (req, res) => {
 >>>>>>> 32bfb0b (style:Standardize response format to use JSON)
+=======
+router.post("/", async (req, res, next) => {
+>>>>>>> 5e32ec2 (style: Unified the parameters in the function.)
   try {
     const userData = req.body.user;
 
