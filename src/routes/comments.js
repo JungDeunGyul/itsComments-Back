@@ -14,7 +14,6 @@ router.get("/:commentId", async (req, res) => {
     }
 
     res.status(200).json({
-      message: "success",
       comments: {
         commentId: comment._id,
         description: comment.description,
