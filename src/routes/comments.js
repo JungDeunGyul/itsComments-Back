@@ -31,6 +31,10 @@ router.post("/new", async function (req, res, next) {
         .json({ message: "The number of characters exceeded 200." });
     }
 
+    if (!description) {
+      return res.status(400).json({ message: "Comment description is empty." });
+    }
+
     const newComment = await Comment.create({
       creator: user._id,
       description,
@@ -52,7 +56,7 @@ router.post("/new", async function (req, res, next) {
   }
 });
 
-router.get("/:commentId", async (req, res) => {
+router.get("/:commentId", async (req, res, next) => {
   try {
     const commentId = req.params.commentId;
     const comment = await Comment.findById(commentId);
