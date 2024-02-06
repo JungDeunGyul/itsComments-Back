@@ -114,7 +114,7 @@ router.delete("/:commentId", async (req, res, next) => {
         (comment) => comment.toString() !== commentId,
       );
 
-      await user.save();
+      await writer.save();
     }
 
     await comment.findByIdAndDelete(commentId);
