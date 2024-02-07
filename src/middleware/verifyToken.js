@@ -8,19 +8,23 @@ admin.initializeApp({
 
 const verifyToken = async (req, res, next) => {
   try {
-    const accessToken = req.cookies.accessToken;
-    const refreshToken = req.cookies.refreshToken;
+    const userToken = req.body.token;
 
+<<<<<<< HEAD
     if (!accessToken || !refreshToken) {
 <<<<<<< HEAD:middleware/verifyToken.js
 <<<<<<< HEAD
 <<<<<<< HEAD
       return res.send({ result: "fail", message: "The token does not exist." });
 =======
+=======
+    if (!userToken) {
+>>>>>>> 505636a (fix: Update verifyToken middleware)
       return res.status(400).json({ message: "The token does not exist." });
 >>>>>>> d07b407 (refactor: Refactor code structure and directory organization):src/middleware/verifyToken.js
     }
 
+<<<<<<< HEAD
     let decodedData;
 
 <<<<<<< HEAD
@@ -35,6 +39,10 @@ const verifyToken = async (req, res, next) => {
         return res.status(400).json({ message: error.message });
       }
     }
+=======
+    const decodedData = await admin.auth().verifyIdToken(userToken);
+    req.user = decodedData;
+>>>>>>> 505636a (fix: Update verifyToken middleware)
 
     next();
   } catch (error) {

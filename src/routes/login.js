@@ -7,7 +7,11 @@ const router = express.Router();
 const { User } = require("../Models/User");
 =======
 const { User } = require("../models/User");
+<<<<<<< HEAD
 >>>>>>> d07b407 (refactor: Refactor code structure and directory organization):src/routes/login.js
+=======
+const verifyToken = require("../middleware/verifyToken");
+>>>>>>> 47dfe0b (feat: Add endpoint for client login request)
 
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -42,6 +46,22 @@ router.post("/", async (req, res, next) => {
         icon: userData.photoURL,
 >>>>>>> 501e5a6 (fix: login roter user.icon)
       });
+    }
+
+    res.status(200).json({ user });
+  } catch (error) {
+    return res.status(400).json({ message: "Login failed." });
+  }
+});
+
+router.post("/client", verifyToken, async (req, res, next) => {
+  try {
+    const userData = req.user;
+
+    let user = await User.findOne({ email: userData.email });
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found." });
     }
 
     res.status(200).json({ user });
