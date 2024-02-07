@@ -4,7 +4,7 @@
 
 - [ ] 칸반 Todo 리스트
 
-## description
+## Description
 
 - 작업 내용
 
