@@ -9,14 +9,14 @@ router.post("/new", async function (req, res, next) {
   try {
     const {
       userData,
-      description,
+      text,
       postDate,
       postUrl,
       postCoordinate,
-      imgpath,
+      screenshot,
       allowPublic,
       publicUsers,
-      maillingAddress,
+      recipientEmail,
     } = req.body;
 
     const user = await User.findOne({ email: userData.email });
@@ -25,30 +25,42 @@ router.post("/new", async function (req, res, next) {
       return res.status(404).json({ message: "User not found" });
     }
 
-    if (description.length > 200) {
+    if (text.length > 200) {
       return res
         .status(400)
         .json({ message: "The number of characters exceeded 200." });
     }
 
-    if (!description) {
-      return res.status(400).json({ message: "Comment description is empty." });
+    if (!text) {
+      return res.status(400).json({ message: "Comment text is empty." });
     }
 
     const newComment = await Comment.create({
       creator: user._id,
-      description,
+      text,
       postDate,
       postUrl,
       postCoordinate,
-      imgpath,
+      screenshot,
       allowPublic,
       publicUsers,
-      maillingAddress,
+      recipientEmail,
     });
 
     user.createdPapers.push(newComment._id);
     await user.save();
+
+    if (newComment.publicUsers) {
+      for (const publicUser of newComment.publicUsers) {
+        const visibleTo = await User.findById(publicUser);
+        visibleTo.accessibleComments.push({
+          comment: newComment._id,
+          isChecked: false,
+        });
+
+        await visibleTo.save();
+      }
+    }
 
     res.status(200).json({ newComment });
   } catch (error) {
@@ -65,20 +77,37 @@ router.get("/:commentId", async (req, res, next) => {
       return res.status(404).json({ error: "Failed to get comments." });
     }
 
+    const userId = req.query.userId;
+
+    if (comment.allowPublic === false) {
+      if (!userId && !comment.publicUsers.find(userId)) {
+        return res.status(401).json({ error: "You do not have access." });
+      }
+    }
+
+    const user = await User.findById(userId);
+    const accessibleComment = user.accessibleComments.find(
+      (obj) => obj.comment.toString() === commentId,
+    );
+
+    accessibleComment.isChecked = true;
+
+    await user.save();
+
     res.status(200).json({
       comments: {
         commentId: comment._id,
-        description: comment.description,
+        text: comment.text,
         creator: comment.creator,
         postUrl: comment.postUrl,
         postCoordinate: {
           x: comment.postCoordinate.x,
           y: comment.postCoordinate.y,
         },
-        imgpath: comment.imgpath,
+        screenshot: comment.screenshot,
         allowPublic: comment.allowPublic,
         publicUsers: comment.publicUsers,
-        maillingAddress: comment.maillingAddress,
+        recipientEmail: comment.recipientEmail,
         reComments: comment.reComments,
       },
     });
@@ -111,14 +140,14 @@ router.delete("/:commentId", async (req, res, next) => {
     for (const reComment of comment.reComments) {
       const writer = await User.findById(reComment.creator);
 
-      writer.participatedComments = writer.participatedComments.filter(
-        (comment) => comment.toString() !== commentId,
+      writer.repliedComments = writer.repliedComments.filter(
+        (reply) => reply.comment.toString() !== commentId,
       );
 
       await writer.save();
     }
 
-    await comment.findByIdAndDelete(commentId);
+    await Comment.findByIdAndDelete(commentId);
 
     res.status(200).json({ message: "comment was successfully deleted." });
   } catch (error) {
