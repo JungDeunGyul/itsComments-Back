@@ -14,8 +14,8 @@ const commentSchema = new mongoose.Schema({
   postDate: { type: Date, required: true },
   postUrl: { type: String, required: true },
   postCoordinate: {
-    x: { type: Number, required: true },
-    y: { type: Number, required: true },
+    x: { type: String, required: true },
+    y: { type: String, required: true },
   },
   screenshot: { type: String, required: true },
   allowPublic: { type: Boolean, required: true },

@@ -47,7 +47,7 @@ router.post("/new", async function (req, res, next) {
       recipientEmail,
     });
 
-    user.createdPapers.push(newComment._id);
+    user.createdComments.push(newComment._id);
     await user.save();
 
     if (newComment.publicUsers) {
