@@ -19,7 +19,9 @@ router.post("/new", async function (req, res, next) {
       recipientEmail,
     } = req.body;
 
-    const user = await User.findOne({ email: userData.email });
+    const user = await User.findOne({ email: userData.email }).populate(
+      "friends",
+    );
 
     if (!user) {
       return res.status(404).json({ message: "User not found" });
@@ -52,11 +54,12 @@ router.post("/new", async function (req, res, next) {
 
     if (newComment.publicUsers) {
       for (const publicUser of newComment.publicUsers) {
-        const visibleTo = await User.findById(publicUser);
-        visibleTo.accessibleComments.push({
-          comment: newComment._id,
-          isChecked: false,
-        });
+        const visibleTo = user.friends.find(
+          (friend) => friend.nickname === publicUser,
+        );
+
+        visibleTo.feedComments.push(newComment._id);
+        visibleTo.receivedComments.push(newComment._id);
 
         await visibleTo.save();
       }
@@ -86,11 +89,9 @@ router.get("/:commentId", async (req, res, next) => {
     }
 
     const user = await User.findById(userId);
-    const accessibleComment = user.accessibleComments.find(
-      (obj) => obj.comment.toString() === commentId,
+    user.feedComments = user.feedComments.filter(
+      (comment) => comment._id.toString() !== commentId,
     );
-
-    accessibleComment.isChecked = true;
 
     await user.save();
 
@@ -145,6 +146,17 @@ router.delete("/:commentId", async (req, res, next) => {
       );
 
       await writer.save();
+    }
+
+    for (const user of comment.publicUsers) {
+      user.receivedComments = await user.receivedComments.filter(
+        (comment) => comment.toString() !== commentId,
+      );
+      user.feedComments = await user.feedComments.filter(
+        (comment) => comment.toString() !== commentId,
+      );
+
+      await user.save();
     }
 
     await Comment.findByIdAndDelete(commentId);
