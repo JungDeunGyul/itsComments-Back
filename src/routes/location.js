@@ -17,6 +17,17 @@ router.get("/", async function (req, res, next) {
 
     const pageComments = [];
 
+    for (const comment of allComments) {
+      if (comment.postUrl === pageUrl) {
+        if (
+          comment.allowPublic === true ||
+          comment.publicUsers.find(loginUser)
+        ) {
+          pageComments.push(comment);
+        }
+      }
+    }
+
     res.status(200).json({ pageComments });
   } catch (error) {
     return res.status(400).json({ message: "Failed to get comments." });
