@@ -60,7 +60,9 @@ router.post("/client", verifyToken, async (req, res, next) => {
   try {
     const userData = req.user;
 
-    let user = await User.findOne({ email: userData.email });
+    let user = await User.findOne({ email: userData.email })
+      .populate("createdComments")
+      .populate("receivedComments");
 
     if (!user) {
       return res.status(404).json({ message: "User not found." });
