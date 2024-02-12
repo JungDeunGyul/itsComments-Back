@@ -149,10 +149,10 @@ router.delete("/:commentId", async (req, res, next) => {
     }
 
     for (const user of comment.publicUsers) {
-      user.receivedComments = await user.receivedComments.filter(
+      user.receivedComments = user.receivedComments.filter(
         (comment) => comment.toString() !== commentId,
       );
-      user.feedComments = await user.feedComments.filter(
+      user.feedComments = user.feedComments.filter(
         (comment) => comment.toString() !== commentId,
       );
 
