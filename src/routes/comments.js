@@ -24,7 +24,7 @@ router.post(
 
       const screenshot = req.file.location;
 
-      const coordinate = JSON.parse(postCoordinate);
+      const commentPosition = JSON.parse(postCoordinate);
       const taggedUser = JSON.parse(publicUsers);
 
       const user = await User.findOne({ email: userData }).populate("friends");
@@ -48,7 +48,7 @@ router.post(
         text,
         postDate,
         postUrl,
-        postCoordinate: coordinate,
+        postCoordinate: commentPosition,
         screenshot,
         allowPublic,
         publicUsers: taggedUser,
@@ -61,14 +61,14 @@ router.post(
 
       if (newComment.publicUsers) {
         for (const publicUser of newComment.publicUsers) {
-          const visibleTo = user.friends.find(
+          const taggedFriends = user.friends.find(
             (friend) => friend.nickname === publicUser,
           );
 
-          visibleTo.feedComments.push(newComment._id);
-          visibleTo.receivedComments.push(newComment._id);
+          taggedFriends.feedComments.push(newComment._id);
+          taggedFriends.receivedComments.push(newComment._id);
 
-          await visibleTo.save();
+          await taggedFriends.save();
         }
       }
 
@@ -169,7 +169,7 @@ router.delete("/:commentId", async (req, res, next) => {
 
     await Comment.findByIdAndDelete(commentId);
 
-    res.status(200).json({ message: "comment was successfully deleted." });
+    res.status(200).json({ message: "comment is successfully deleted." });
   } catch (error) {
     return res.status(400).json({ message: "Failed to delete a comment." });
   }
