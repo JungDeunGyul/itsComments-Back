@@ -4,72 +4,80 @@ const router = express.Router();
 
 const { User } = require("../models/User");
 const { Comment } = require("../models/Comment");
+const s3Uploader = require("../middleware/s3Uploader");
 
-router.post("/new", async function (req, res, next) {
-  try {
-    const {
-      userData,
-      text,
-      postDate,
-      postUrl,
-      postCoordinate,
-      screenshot,
-      allowPublic,
-      publicUsers,
-      recipientEmail,
-    } = req.body;
+router.post(
+  "/new",
+  s3Uploader.single("screenshot"),
+  async function (req, res, next) {
+    try {
+      const {
+        userData,
+        text,
+        postDate,
+        postUrl,
+        postCoordinate,
+        allowPublic,
+        publicUsers,
+        recipientEmail,
+      } = req.body;
 
-    const user = await User.findOne({ email: userData.email }).populate(
-      "friends",
-    );
+      const screenshot = req.file.location;
 
-    if (!user) {
-      return res.status(404).json({ message: "User not found" });
-    }
+      const coordinate = JSON.parse(postCoordinate);
+      const taggedUser = JSON.parse(publicUsers);
 
-    if (text.length > 200) {
-      return res
-        .status(400)
-        .json({ message: "The number of characters exceeded 200." });
-    }
+      const user = await User.findOne({ email: userData }).populate("friends");
 
-    if (!text) {
-      return res.status(400).json({ message: "Comment text is empty." });
-    }
-
-    const newComment = await Comment.create({
-      creator: user._id,
-      text,
-      postDate,
-      postUrl,
-      postCoordinate,
-      screenshot,
-      allowPublic,
-      publicUsers,
-      recipientEmail,
-    });
-
-    user.createdComments.push(newComment._id);
-    await user.save();
-
-    if (newComment.publicUsers) {
-      for (const publicUser of newComment.publicUsers) {
-        const visibleTo = user.friends.find(
-          (friend) => friend.nickname === publicUser,
-        );
-
-        visibleTo.feedComments.push(newComment._id);
-        visibleTo.receivedComments.push(newComment._id);
-
-        await visibleTo.save();
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
       }
-    }
 
-    res.status(200).json({ newComment });
-  } catch (error) {
-    return res.status(400).json({ message: "Comment creation failed." });
-  }
-});
+      if (text.length > 200) {
+        return res
+          .status(400)
+          .json({ message: "The number of characters exceeded 200." });
+      }
+
+      if (!text) {
+        return res.status(400).json({ message: "Comment text is empty." });
+      }
+
+      const newComment = await Comment.create({
+        creator: user._id,
+        text,
+        postDate,
+        postUrl,
+        postCoordinate: coordinate,
+        screenshot,
+        allowPublic,
+        publicUsers: taggedUser,
+        recipientEmail,
+      });
+
+      user.createdComments.push(newComment._id);
+
+      await user.save();
+
+      if (newComment.publicUsers) {
+        for (const publicUser of newComment.publicUsers) {
+          const visibleTo = user.friends.find(
+            (friend) => friend.nickname === publicUser,
+          );
+
+          visibleTo.feedComments.push(newComment._id);
+          visibleTo.receivedComments.push(newComment._id);
+
+          await visibleTo.save();
+        }
+      }
+
+      res.status(200).json({ newComment });
+    } catch (error) {
+      return res.status(400).json({ message: "Comment creation failed." });
+    }
+  },
+);
 
 router.get("/:commentId", async (req, res, next) => {
   try {
