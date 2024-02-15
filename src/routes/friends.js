@@ -16,4 +16,18 @@ router.get("/", async function (req, res, next) {
   res.status(200).send({ friends });
 });
 
+router.patch("/addition", async function (req, res, next) {
+  const { userId, friendMail } = req.body;
+  const user = await User.findById(userId);
+  const friend = await User.findOne({ email: friendMail });
+
+  user.friends.push(friend);
+
+  await user.save();
+
+  const friends = user.friends;
+
+  res.status(200).send({ friends });
+});
+
 module.exports = router;
