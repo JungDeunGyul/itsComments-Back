@@ -92,32 +92,20 @@ router.post(
 router.get("/:commentId", async (req, res, next) => {
   try {
     const commentId = req.params.commentId;
-    const comment = await Comment.findById(commentId);
+    const comment = await Comment.findById(commentId)
+      .populate("creator")
+      .populate({ path: "reComments", populate: { path: "creator" } });
 
     if (!comment) {
       return res.status(404).json({ error: "Failed to get comments." });
     }
-
-    const userId = req.query.userId;
-
-    if (comment.allowPublic === false) {
-      if (!userId && !comment.publicUsers.find(userId)) {
-        return res.status(401).json({ error: "You do not have access." });
-      }
-    }
-
-    const user = await User.findById(userId);
-    user.feedComments = user.feedComments.filter(
-      (comment) => comment._id.toString() !== commentId,
-    );
-
-    await user.save();
 
     res.status(200).json({
       comments: {
         commentId: comment._id,
         text: comment.text,
         creator: comment.creator,
+        postDate: comment.postDate,
         postUrl: comment.postUrl,
         postCoordinate: {
           x: comment.postCoordinate.x,
