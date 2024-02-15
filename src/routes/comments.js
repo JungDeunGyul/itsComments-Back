@@ -22,15 +22,25 @@ router.post(
         recipientEmail,
       } = req.body;
 
-      const screenshot = req.file.location;
-
-      const commentPosition = JSON.parse(postCoordinate);
-      const taggedUser = JSON.parse(publicUsers);
-
       const user = await User.findOne({ email: userData }).populate("friends");
 
       if (!user) {
         return res.status(404).json({ message: "User not found" });
+      }
+
+      const screenshot = req.file.location;
+      const commentPosition = JSON.parse(postCoordinate);
+      const taggedUser = JSON.parse(publicUsers);
+      const taggedUsersList = [];
+
+      if (taggedUser) {
+        for (const publicUser of taggedUser) {
+          const taggedFriends = user.friends.find(
+            (friend) => friend.nickname === publicUser,
+          );
+
+          taggedUsersList.push(taggedFriends._id);
+        }
       }
 
       if (text.length > 200) {
@@ -51,7 +61,7 @@ router.post(
         postCoordinate: commentPosition,
         screenshot,
         allowPublic,
-        publicUsers: taggedUser,
+        publicUsers: taggedUsersList,
         recipientEmail,
       });
 
@@ -62,7 +72,7 @@ router.post(
       if (newComment.publicUsers) {
         for (const publicUser of newComment.publicUsers) {
           const taggedFriends = user.friends.find(
-            (friend) => friend.nickname === publicUser,
+            (friend) => friend._id === publicUser,
           );
 
           taggedFriends.feedComments.push(newComment._id);
