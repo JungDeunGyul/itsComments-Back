@@ -39,4 +39,23 @@ router.patch("/addition", async function (req, res, next) {
   res.status(200).send({ friends });
 });
 
+router.patch("/delete", async function (req, res, next) {
+  const { userId, friendId } = req.body;
+  const user = await User.findById(userId);
+
+  if (!user) {
+    return res.status(404).json({ message: "User not found." });
+  }
+
+  user.friends = user.friends.filter(
+    (friend) => friend._id.toString() !== friendId,
+  );
+
+  await user.save();
+
+  const friends = user.friends;
+
+  res.status(200).send({ friends });
+});
+
 module.exports = router;
