@@ -163,9 +163,12 @@ router.post("/recomments", async (req, res, next) => {
   }
 });
 
-router.delete("/:commentId", async (req, res, next) => {
+router.delete("/recomments/:commentId/:replyId", async (req, res, next) => {
   try {
     const commentId = req.params.commentId;
+    const replyId = req.params.replyId;
+    const { userId } = req.body;
+
     const comment = await Comment.findById(commentId);
 
     if (!comment) {
@@ -178,36 +181,42 @@ router.delete("/:commentId", async (req, res, next) => {
       return res.status(404).json({ message: "Creator not found" });
     }
 
-    user.createdComments = user.createdComments.filter(
-      (comment) => comment.toString() !== commentId,
+    const recomment = comment.reComments.find(
+      (recomment) => recomment._id.toString() === replyId,
     );
 
-    await user.save();
+    if (!recomment) {
+      return res.status(404).json({ message: "No such recomment was found." });
+    }
 
-    for (const reComment of comment.reComments) {
-      const writer = await User.findById(reComment.creator);
+    const isRecommentCreator = recomment.creator.toString() === userId;
+    const isCommentCreator = comment.creator.toString() === userId;
+
+    if (isRecommentCreator || isCommentCreator) {
+      comment.reComments = comment.reComments.filter(
+        (recomment) => recomment._id.toString() !== replyId,
+      );
+
+      await comment.save();
+
+      const writer = await User.findById(recomment.creator);
+      console.log(writer);
+      if (!writer) {
+        return res
+          .status(404)
+          .json({ message: "Recomment creator not found." });
+      }
 
       writer.repliedComments = writer.repliedComments.filter(
         (reply) => reply.comment.toString() !== commentId,
       );
 
       await writer.save();
+
+      res.status(200).json({ message: "Recomment is successfully deleted." });
+    } else {
+      return res.status(403).json({ message: "Permission denied." });
     }
-
-    for (const user of comment.publicUsers) {
-      user.receivedComments = user.receivedComments.filter(
-        (comment) => comment.toString() !== commentId,
-      );
-      user.feedComments = user.feedComments.filter(
-        (comment) => comment.toString() !== commentId,
-      );
-
-      await user.save();
-    }
-
-    await Comment.findByIdAndDelete(commentId);
-
-    res.status(200).json({ message: "comment is successfully deleted." });
   } catch (error) {
     return res.status(400).json({ message: "Failed to delete a comment." });
   }
