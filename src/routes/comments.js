@@ -200,7 +200,7 @@ router.delete("/recomments/:commentId/:replyId", async (req, res, next) => {
       await comment.save();
 
       const writer = await User.findById(recomment.creator);
-      console.log(writer);
+
       if (!writer) {
         return res
           .status(404)
