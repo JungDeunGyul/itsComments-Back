@@ -33,7 +33,6 @@ router.get("/", async function (req, res, next) {
 
     res.status(200).json({ pageComments });
   } catch (error) {
-    console.log(error);
     return res.status(400).json({ message: "Failed to get comments." });
   }
 });

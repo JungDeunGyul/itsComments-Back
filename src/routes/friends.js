@@ -38,4 +38,5 @@ router.patch("/addition", async function (req, res, next) {
 
   res.status(200).send({ friends });
 });
+
 module.exports = router;
