@@ -123,6 +123,46 @@ router.get("/:commentId", async (req, res, next) => {
   }
 });
 
+router.post("/recomments", async (req, res, next) => {
+  try {
+    const { userData, text, postDate, commentId } = req.body;
+
+    const user = await User.findOne({ email: userData.email });
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    const comment = await Comment.findById(commentId);
+
+    if (!comment) {
+      return res.status(404).json({ message: "Comment not found" });
+    }
+
+    const reComment = {
+      text,
+      creator: user._id,
+      postDate,
+    };
+
+    comment.reComments.push(reComment);
+    await comment.save();
+
+    user.repliedComments.push({
+      comment: comment._id,
+      text,
+    });
+
+    await user.save();
+
+    res
+      .status(200)
+      .json({ message: "Recomment created successfully", reComment });
+  } catch (error) {
+    return res.status(400).json({ message: "Recomment creation failed." });
+  }
+});
+
 router.delete("/:commentId", async (req, res, next) => {
   try {
     const commentId = req.params.commentId;
