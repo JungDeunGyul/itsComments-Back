@@ -123,99 +123,94 @@ router.get("/:commentId", async (req, res, next) => {
   }
 });
 
-router.post("/recomments", async (req, res, next) => {
+router.patch("/recomments", async (req, res, next) => {
   try {
-    const { userData, text, postDate, commentId } = req.body;
+    const { userData, userId, commentId, replyId, postDate, text, action } =
+      req.body;
 
-    const user = await User.findOne({ email: userData.email });
+    if (action === "delete") {
+      const comment = await Comment.findById(commentId);
 
-    if (!user) {
-      return res.status(404).json({ message: "User not found" });
-    }
-
-    const comment = await Comment.findById(commentId);
-
-    if (!comment) {
-      return res.status(404).json({ message: "Comment not found" });
-    }
-
-    const reComment = {
-      text,
-      creator: user._id,
-      postDate,
-    };
-
-    comment.reComments.push(reComment);
-    await comment.save();
-
-    user.repliedComments.push({
-      comment: comment._id,
-      text,
-    });
-
-    await user.save();
-
-    res
-      .status(200)
-      .json({ message: "Recomment created successfully", reComment });
-  } catch (error) {
-    return res.status(400).json({ message: "Recomment creation failed." });
-  }
-});
-
-router.delete("/recomments/:commentId/:replyId", async (req, res, next) => {
-  try {
-    const commentId = req.params.commentId;
-    const replyId = req.params.replyId;
-    const { userId } = req.body;
-
-    const comment = await Comment.findById(commentId);
-
-    if (!comment) {
-      return res.status(404).json({ message: "No such comment was found." });
-    }
-
-    const user = await User.findById(comment.creator);
-
-    if (!user) {
-      return res.status(404).json({ message: "Creator not found" });
-    }
-
-    const recomment = comment.reComments.find(
-      (recomment) => recomment._id.toString() === replyId,
-    );
-
-    if (!recomment) {
-      return res.status(404).json({ message: "No such recomment was found." });
-    }
-
-    const isRecommentCreator = recomment.creator.toString() === userId;
-    const isCommentCreator = comment.creator.toString() === userId;
-
-    if (isRecommentCreator || isCommentCreator) {
-      comment.reComments = comment.reComments.filter(
-        (recomment) => recomment._id.toString() !== replyId,
-      );
-
-      await comment.save();
-
-      const writer = await User.findById(recomment.creator);
-
-      if (!writer) {
-        return res
-          .status(404)
-          .json({ message: "Recomment creator not found." });
+      if (!comment) {
+        return res.status(404).json({ message: "No such comment was found." });
       }
 
-      writer.repliedComments = writer.repliedComments.filter(
-        (reply) => reply.comment.toString() !== commentId,
+      const user = await User.findById(comment.creator);
+
+      if (!user) {
+        return res.status(404).json({ message: "Creator not found" });
+      }
+
+      const recomment = comment.reComments.find(
+        (recomment) => recomment._id.toString() === replyId,
       );
 
-      await writer.save();
+      if (!recomment) {
+        return res
+          .status(404)
+          .json({ message: "No such recomment was found." });
+      }
 
-      res.status(200).json({ message: "Recomment is successfully deleted." });
+      const isRecommentCreator = recomment.creator.toString() === userId;
+      const isCommentCreator = comment.creator.toString() === userId;
+
+      if (isRecommentCreator || isCommentCreator) {
+        comment.reComments = comment.reComments.filter(
+          (recomment) => recomment._id.toString() !== replyId,
+        );
+
+        await comment.save();
+
+        const writer = await User.findById(recomment.creator);
+
+        if (!writer) {
+          return res
+            .status(404)
+            .json({ message: "Recomment creator not found." });
+        }
+
+        writer.repliedComments = writer.repliedComments.filter(
+          (reply) => reply.comment.toString() !== commentId,
+        );
+
+        await writer.save();
+
+        res.status(200).json({ message: "Recomment is successfully deleted." });
+      }
+    } else if (action === "update") {
+      const user = await User.findOne({ email: userData.email });
+
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      const comment = await Comment.findById(commentId);
+
+      if (!comment) {
+        return res.status(404).json({ message: "Comment not found" });
+      }
+
+      const reComment = {
+        text,
+        creator: user._id,
+        postDate,
+      };
+
+      comment.reComments.push(reComment);
+      await comment.save();
+
+      user.repliedComments.push({
+        comment: comment._id,
+        text,
+      });
+
+      await user.save();
+
+      res
+        .status(200)
+        .json({ message: "Recomment created successfully", reComment });
     } else {
-      return res.status(403).json({ message: "Permission denied." });
+      return res.status(400).json({ message: "Invalid action." });
     }
   } catch (error) {
     return res.status(400).json({ message: "Failed to delete a comment." });
