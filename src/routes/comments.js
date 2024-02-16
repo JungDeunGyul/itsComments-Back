@@ -6,6 +6,7 @@ const { User } = require("../models/User");
 const { Comment } = require("../models/Comment");
 const s3Uploader = require("../middleware/s3Uploader");
 const { sendMail } = require("../utiles/mailSender");
+const { checkMails } = require("../utiles/mailChecker");
 
 router.post(
   "/new",
@@ -55,16 +56,20 @@ router.post(
       }
 
       if (recipientEmail) {
-        const mailSent = await sendMail(
-          recipientEmail,
-          userData,
-          text,
-          postUrl,
-          screenshot,
-        );
+        if (checkMails(recipientEmail)) {
+          const mailSent = await sendMail(
+            recipientEmail,
+            userData,
+            text,
+            postUrl,
+            screenshot,
+          );
 
-        if (!mailSent) {
-          return res.status(500).json({ message: "Failed to send email." });
+          if (!mailSent) {
+            return res.status(500).json({ message: "Failed to send email." });
+          }
+        } else {
+          return res.status(400).json({ message: "Invalid email address." });
         }
       }
 
