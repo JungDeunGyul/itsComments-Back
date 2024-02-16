@@ -27,9 +27,14 @@ router.post("/", async (req, res, next) => {
   try {
     const userData = req.body.user;
 
-    let user = await User.findOne({ email: userData.email }).populate(
-      "friends",
-    );
+    let user = await User.findOne({ email: userData.email })
+      .populate("friends")
+      .populate({
+        path: "feedComments",
+        populate: {
+          path: "creator",
+        },
+      });
 
     if (!user) {
       user = await User.create({
