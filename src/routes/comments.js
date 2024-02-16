@@ -57,6 +57,7 @@ router.post(
       if (recipientEmail) {
         const mailSent = await sendMail(
           recipientEmail,
+          userData,
           text,
           postUrl,
           screenshot,

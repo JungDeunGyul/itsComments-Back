@@ -1,6 +1,6 @@
 const nodemailer = require("nodemailer");
 
-async function sendMail(recipientEmail, text, postUrl, screenshot) {
+async function sendMail(recipientEmail, userData, text, postUrl, screenshot) {
   try {
     const transporter = nodemailer.createTransport({
       service: process.env.EMAIL_SERVICE,
@@ -11,6 +11,7 @@ async function sendMail(recipientEmail, text, postUrl, screenshot) {
     });
 
     const html = `
+      <p>작성자 메일: ${userData}</p>
       <p>${text}</p>
       <a href=${postUrl}>${postUrl}</a>
       <br>
