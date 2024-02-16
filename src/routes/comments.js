@@ -5,6 +5,7 @@ const router = express.Router();
 const { User } = require("../models/User");
 const { Comment } = require("../models/Comment");
 const s3Uploader = require("../middleware/s3Uploader");
+const { sendMail } = require("../utiles/mailSender");
 
 router.post(
   "/new",
@@ -51,6 +52,19 @@ router.post(
 
       if (!text) {
         return res.status(400).json({ message: "Comment text is empty." });
+      }
+
+      if (recipientEmail) {
+        const mailSent = await sendMail(
+          recipientEmail,
+          text,
+          postUrl,
+          screenshot,
+        );
+
+        if (!mailSent) {
+          return res.status(500).json({ message: "Failed to send email." });
+        }
       }
 
       const newComment = await Comment.create({
