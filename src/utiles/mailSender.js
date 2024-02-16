@@ -25,8 +25,7 @@ async function sendMail(recipientEmail, userData, text, postUrl, screenshot) {
       html,
     };
 
-    const info = await transporter.sendMail(mailOptions);
-    console.log("Email Sent: ", info);
+    await transporter.sendMail(mailOptions);
 
     return true;
   } catch (error) {
