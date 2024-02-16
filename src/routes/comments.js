@@ -125,8 +125,7 @@ router.get("/:commentId", async (req, res, next) => {
 
 router.patch("/recomments", async (req, res, next) => {
   try {
-    const { userData, userId, commentId, replyId, postDate, text, action } =
-      req.body;
+    const { userId, commentId, replyId, postDate, text, action } = req.body;
 
     if (action === "delete") {
       const comment = await Comment.findById(commentId);
@@ -178,7 +177,7 @@ router.patch("/recomments", async (req, res, next) => {
         res.status(200).json({ message: "Recomment is successfully deleted." });
       }
     } else if (action === "update") {
-      const user = await User.findOne({ email: userData.email });
+      const user = await User.findById(userId);
 
       if (!user) {
         return res.status(404).json({ message: "User not found" });
