@@ -4,7 +4,7 @@ const { Schema } = mongoose;
 
 const reCommentSchema = new mongoose.Schema({
   text: { type: String, required: true },
-  creator: [{ type: Schema.Types.ObjectId, ref: "User", required: true }],
+  creator: { type: Schema.Types.ObjectId, ref: "User", required: true },
   postDate: { type: Date, required: true },
 });
 
