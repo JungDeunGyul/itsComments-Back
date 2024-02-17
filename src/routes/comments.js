@@ -266,6 +266,7 @@ router.delete("/:commentId", async (req, res, next) => {
 
     for (const reComment of comment.reComments) {
       const writer = await User.findById(reComment.creator);
+
       writer.repliedComments = writer.repliedComments?.filter(
         (reply) => reply.comment.toString() !== commentId,
       );
@@ -275,9 +276,11 @@ router.delete("/:commentId", async (req, res, next) => {
 
     for (const userId of comment.publicUsers) {
       const user = await User.findById(userId);
+
       user.receivedComments = user.receivedComments?.filter(
         (comment) => comment.toString() !== commentId,
       );
+
       user.feedComments = user.feedComments?.filter(
         (comment) => comment.toString() !== commentId,
       );
