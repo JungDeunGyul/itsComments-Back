@@ -236,4 +236,62 @@ router.patch("/recomments", async (req, res, next) => {
   }
 });
 
+router.delete("/:commentId", async (req, res, next) => {
+  try {
+    const commentId = req.params.commentId;
+    const { userId } = req.body;
+    const comment = await Comment.findById(commentId);
+
+    if (!comment) {
+      return res.status(404).json({ message: "No such comment was found." });
+    }
+
+    const user = await User.findById(comment.creator);
+
+    if (userId !== comment.creator.toString()) {
+      return res
+        .status(404)
+        .json({ message: "You do not have permission to delete." });
+    }
+
+    if (!user) {
+      return res.status(404).json({ message: "Creator not found" });
+    }
+
+    user.createdComments = user.createdComments.filter(
+      (comment) => comment.toString() !== commentId,
+    );
+
+    await user.save();
+
+    for (const reComment of comment.reComments) {
+      const writer = await User.findById(reComment.creator);
+      writer.repliedComments = writer.repliedComments?.filter(
+        (reply) => reply.comment.toString() !== commentId,
+      );
+
+      await writer.save();
+    }
+
+    for (const userId of comment.publicUsers) {
+      const user = await User.findById(userId);
+      user.receivedComments = user.receivedComments?.filter(
+        (comment) => comment.toString() !== commentId,
+      );
+      user.feedComments = user.feedComments?.filter(
+        (comment) => comment.toString() !== commentId,
+      );
+
+      await user.save();
+    }
+
+    await Comment.findByIdAndDelete(commentId);
+
+    res.status(200).json({ message: "comment is successfully deleted." });
+  } catch (error) {
+    console.log(error);
+    return res.status(400).json({ message: "Failed to delete a comment." });
+  }
+});
+
 module.exports = router;
