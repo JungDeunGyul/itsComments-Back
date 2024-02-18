@@ -30,6 +30,14 @@ router.patch("/addition", async function (req, res, next) {
     return res.status(404).json({ message: "friend not found." });
   }
 
+  const isFriendAlreadyAdded = user.friends.some((includeFriend) =>
+    includeFriend._id.equals(friend._id),
+  );
+
+  if (isFriendAlreadyAdded) {
+    return res.status(400).json({ message: "Friend already exists." });
+  }
+
   user.friends.push(friend);
 
   await user.save();
