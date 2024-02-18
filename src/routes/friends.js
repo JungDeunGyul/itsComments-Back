@@ -18,7 +18,7 @@ router.get("/", async function (req, res, next) {
 
 router.patch("/addition", async function (req, res, next) {
   const { userId, friendMail } = req.body;
-  const user = await User.findById(userId);
+  const user = await User.findById(userId).populate("friends");
 
   if (!user) {
     return res.status(404).json({ message: "User not found." });
@@ -41,7 +41,7 @@ router.patch("/addition", async function (req, res, next) {
 
 router.patch("/delete", async function (req, res, next) {
   const { userId, friendId } = req.body;
-  const user = await User.findById(userId);
+  const user = await User.findById(userId).populate("friends");
 
   if (!user) {
     return res.status(404).json({ message: "User not found." });
