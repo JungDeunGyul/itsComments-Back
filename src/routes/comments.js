@@ -112,6 +112,7 @@ router.post(
 router.get("/:commentId", async (req, res, next) => {
   try {
     const commentId = req.params.commentId;
+    const userId = req.query.userId;
     const comment = await Comment.findById(commentId)
       .populate("creator")
       .populate({ path: "reComments", populate: { path: "creator" } });
@@ -119,6 +120,18 @@ router.get("/:commentId", async (req, res, next) => {
     if (!comment) {
       return res.status(404).json({ error: "Failed to get comments." });
     }
+
+    const user = await User.findById(userId);
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    user.feedComments = user.feedComments.filter(
+      (comment) => comment.toString() !== commentId,
+    );
+
+    await user.save();
 
     res.status(200).json({
       comments: {
