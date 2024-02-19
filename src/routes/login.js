@@ -65,7 +65,7 @@ router.post("/client", verifyToken, async (req, res, next) => {
   try {
     const userData = req.user;
 
-    let user = await User.findOne({ email: userData.email })
+    const user = await User.findOne({ email: userData.email })
       .populate({
         path: "createdComments",
         populate: {
