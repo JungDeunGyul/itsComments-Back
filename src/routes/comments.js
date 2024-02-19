@@ -259,7 +259,19 @@ router.delete("/:commentId", async (req, res, next) => {
       return res.status(404).json({ message: "No such comment was found." });
     }
 
-    const user = await User.findById(comment.creator);
+    const user = await User.findById(comment.creator)
+      .populate({
+        path: "createdComments",
+        populate: {
+          path: "creator",
+        },
+      })
+      .populate({
+        path: "receivedComments",
+        populate: {
+          path: "creator",
+        },
+      });
 
     if (userId !== comment.creator.toString()) {
       return res
@@ -272,7 +284,7 @@ router.delete("/:commentId", async (req, res, next) => {
     }
 
     user.createdComments = user.createdComments.filter(
-      (comment) => comment.toString() !== commentId,
+      (comment) => comment._id.toString() !== commentId,
     );
 
     await user.save();
@@ -303,9 +315,15 @@ router.delete("/:commentId", async (req, res, next) => {
 
     await Comment.findByIdAndDelete(commentId);
 
-    res.status(200).json({ message: "comment is successfully deleted." });
+    const allComments = {
+      createdComments: user.createdComments,
+      receivedComments: user.receivedComments,
+    };
+
+    res
+      .status(200)
+      .json({ allComments, message: "comment is successfully deleted." });
   } catch (error) {
-    console.log(error);
     return res.status(400).json({ message: "Failed to delete a comment." });
   }
 });
