@@ -30,7 +30,9 @@ router.post(
         return res.status(404).json({ message: "User not found" });
       }
 
-      const screenshot = req.file.location;
+      const imageKey = req.file.key;
+
+      const screenshot = `${process.env.CLOUD_FROUNT}/${imageKey}`;
       const commentPosition = JSON.parse(postCoordinate);
       const taggedUser = JSON.parse(publicUsers);
       const taggedUsersList = [];
