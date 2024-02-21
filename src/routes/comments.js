@@ -99,7 +99,7 @@ router.post(
 
       user.createdComments.push(newComment._id);
 
-      if (user._id.toString() === "65cccdc51ecc1196b364a1c7") {
+      if (user._id.toString() === process.env.NON_MEMBER) {
         setTimeout(
           async () => {
             await Comment.deleteOne({ _id: newComment._id });
