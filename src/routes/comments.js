@@ -18,21 +18,6 @@ const sendUserDataToClients = (updateUserData, friendId) => {
   }
 };
 
-router.get("/comments-stream/:friendId", (req, res) => {
-  const { friendId } = req.params;
-
-  res.setHeader("Content-Type", "text/event-stream");
-  res.setHeader("Cache-Control", "no-cache");
-  res.setHeader("Connection", "keep-alive");
-  res.friendId = friendId;
-
-  clients.push(res);
-
-  req.on("close", () => {
-    clients = clients.filter((client) => client !== res);
-  });
-});
-
 router.post(
   "/new",
   s3Uploader.single("screenshot"),
@@ -372,6 +357,21 @@ router.delete("/:commentId", async (req, res, next) => {
   } catch (error) {
     return res.status(400).json({ message: "Failed to delete a comment." });
   }
+});
+
+router.get("/comments-stream/:friendId", (req, res) => {
+  const { friendId } = req.params;
+
+  res.setHeader("Content-Type", "text/event-stream");
+  res.setHeader("Cache-Control", "no-cache");
+  res.setHeader("Connection", "keep-alive");
+  res.friendId = friendId;
+
+  clients.push(res);
+
+  req.on("close", () => {
+    clients = clients.filter((client) => client !== res);
+  });
 });
 
 module.exports = router;
