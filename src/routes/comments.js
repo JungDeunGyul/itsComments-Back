@@ -121,13 +121,9 @@ router.post(
 
           await taggedFriends.save();
 
-          console.log("태그유저", taggedFriends);
-
           const updateUserData = await User.findById(publicUser)
             .populate("friends")
             .populate({ path: "feedComments", populate: { path: "creator" } });
-
-          console.log("업데이트유저", updateUserData);
 
           sendUserDataToClients(updateUserData, taggedFriends._id.toString());
         }
