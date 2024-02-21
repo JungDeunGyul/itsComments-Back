@@ -114,6 +114,15 @@ router.post(
 
       user.createdComments.push(newComment._id);
 
+      if (user._id.toString() === "65cccdc51ecc1196b364a1c7") {
+        setTimeout(
+          async () => {
+            await Comment.deleteOne({ _id: newComment._id });
+          },
+          60 * 60 * 1000,
+        );
+      }
+
       await user.save();
 
       if (newComment.publicUsers) {
@@ -127,9 +136,13 @@ router.post(
 
           await taggedFriends.save();
 
+          console.log("태그유저", taggedFriends);
+
           const updateUserData = await User.findById(publicUser)
             .populate("friends")
             .populate({ path: "feedComments", populate: { path: "creator" } });
+
+          console.log("업데이트유저", updateUserData);
 
           sendUserDataToClients(updateUserData, taggedFriends._id.toString());
         }
