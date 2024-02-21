@@ -10,10 +10,11 @@ const { checkMails } = require("../utiles/mailChecker");
 
 let clients = [];
 
-const sendCommentToClients = (commentData, friendId) => {
+const sendUserDataToClients = (updateUserData, friendId) => {
   const client = clients.find((client) => client.friendId === friendId);
+
   if (client) {
-    client.write(`data: ${JSON.stringify(commentData)}\n\n`);
+    client.write(`data: ${JSON.stringify(updateUserData)}\n\n`);
   }
 };
 
@@ -130,7 +131,7 @@ router.post(
             .populate("friends")
             .populate({ path: "feedComments", populate: { path: "creator" } });
 
-          sendCommentToClients(updateUserData, taggedFriends._id.toString());
+          sendUserDataToClients(updateUserData, taggedFriends._id.toString());
         }
       }
 
