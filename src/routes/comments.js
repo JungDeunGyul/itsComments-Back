@@ -9,12 +9,21 @@ const { sendMail } = require("../utiles/mailSender");
 const { checkMails } = require("../utiles/mailChecker");
 
 let clients = [];
+let commentsSSE = [];
 
 const sendUserDataToClients = (updateUserData, friendId) => {
   const client = clients.find((client) => client.friendId === friendId);
 
   if (client) {
     client.write(`data: ${JSON.stringify(updateUserData)}\n\n`);
+  }
+};
+
+const sendUpdatedCommentToClients = (updateCommentData, commentId) => {
+  const comment = commentsSSE.find((res) => res.comment === commentId);
+
+  if (comment) {
+    comment.write(`data: ${JSON.stringify(updateCommentData)}\n\n`);
   }
 };
 
@@ -234,6 +243,8 @@ router.patch("/recomments", async (req, res, next) => {
 
         await writer.save();
 
+        sendUpdatedCommentToClients(comment, commentId);
+
         res.status(200).json({ message: "Recomment is successfully deleted." });
       }
     } else if (action === "update") {
@@ -264,6 +275,8 @@ router.patch("/recomments", async (req, res, next) => {
       });
 
       await user.save();
+
+      sendUpdatedCommentToClients(comment, commentId);
 
       res
         .status(200)
@@ -367,6 +380,21 @@ router.get("/comments-stream/:friendId", (req, res) => {
 
   req.on("close", () => {
     clients = clients.filter((client) => client !== res);
+  });
+});
+
+router.get("/recomments/comments-recomments-stream/:commentId", (req, res) => {
+  const { commentId } = req.params;
+
+  res.setHeader("Content-Type", "text/event-stream");
+  res.setHeader("Cache-Control", "no-cache");
+  res.setHeader("Connection", "keep-alive");
+  res.comment = commentId;
+
+  commentsSSE.push(res);
+
+  req.on("close", () => {
+    commentsSSE = commentsSSE.filter((comment) => comment !== res);
   });
 });
 
