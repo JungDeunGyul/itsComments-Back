@@ -8,11 +8,11 @@ const s3Uploader = require("../middleware/s3Uploader");
 const { sendMail } = require("../utiles/mailSender");
 const { checkMails } = require("../utiles/mailChecker");
 
-let clients = [];
+let clientsSSE = [];
 let commentsSSE = [];
 
 const sendUserDataToClients = (updateUserData, friendId) => {
-  const client = clients.find((client) => client.friendId === friendId);
+  const client = clientsSSE.find((client) => client.friendId === friendId);
 
   if (client) {
     client.write(`data: ${JSON.stringify(updateUserData)}\n\n`);
@@ -376,10 +376,10 @@ router.get("/comments-stream/:friendId", (req, res) => {
   res.setHeader("Connection", "keep-alive");
   res.friendId = friendId;
 
-  clients.push(res);
+  clientsSSE.push(res);
 
   req.on("close", () => {
-    clients = clients.filter((client) => client !== res);
+    clientsSSE = clientsSSE.filter((client) => client !== res);
   });
 });
 
