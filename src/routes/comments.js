@@ -243,7 +243,14 @@ router.patch("/recomments", async (req, res, next) => {
 
         await writer.save();
 
-        sendUpdatedCommentToClients(comment, commentId);
+        const updateComment = await Comment.findById(commentId)
+          .populate("creator")
+          .populate({
+            path: "reComments",
+            populate: { path: "creator" },
+          });
+
+        sendUpdatedCommentToClients(updateComment, commentId);
 
         res.status(200).json({ message: "Recomment is successfully deleted." });
       }
@@ -276,7 +283,14 @@ router.patch("/recomments", async (req, res, next) => {
 
       await user.save();
 
-      sendUpdatedCommentToClients(comment, commentId);
+      const updateComment = await Comment.findById(commentId)
+        .populate("creator")
+        .populate({
+          path: "reComments",
+          populate: { path: "creator" },
+        });
+
+      sendUpdatedCommentToClients(updateComment, commentId);
 
       res
         .status(200)
