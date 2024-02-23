@@ -108,15 +108,6 @@ router.post(
 
       user.createdComments.push(newComment._id);
 
-      if (user._id.toString() === process.env.NON_MEMBER) {
-        setTimeout(
-          async () => {
-            await Comment.deleteOne({ _id: newComment._id });
-          },
-          60 * 60 * 1000,
-        );
-      }
-
       await user.save();
 
       if (newComment.publicUsers) {

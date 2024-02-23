@@ -22,6 +22,15 @@ const commentSchema = new mongoose.Schema({
   publicUsers: [{ type: Schema.Types.ObjectId, ref: "User" }],
   recipientEmail: [{ type: String }],
   reComments: [reCommentSchema],
+  expiresAt: { type: Date, index: true },
+});
+
+commentSchema.pre("save", async function (next) {
+  if (this.creator.toString() === process.env.NON_MEMBER) {
+    this.expiresAt = new Date(Date.now() + 60 * 60 * 1000);
+  }
+
+  next();
 });
 
 exports.Comment = mongoose.model("Comment", commentSchema);
