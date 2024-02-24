@@ -27,7 +27,6 @@ router.patch("/", s3Uploader.single("profileIcon"), async (req, res, next) => {
 
     await user.save();
 
-    console.log(user.icon);
     res.status(200).json({ message: "Profile updated successfully", user });
   } catch (error) {
 <<<<<<< HEAD
