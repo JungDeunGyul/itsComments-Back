@@ -12,7 +12,9 @@ let clientsSSE = [];
 let commentsSSE = [];
 
 const sendUserDataToClients = (updateUserData, friendId) => {
-  const client = clientsSSE.find((client) => client.friendId === friendId);
+  const client = clientsSSE.find((client) => {
+    return client.loginUser === friendId;
+  });
 
   if (client) {
     client.write(`data: ${JSON.stringify(updateUserData)}\n\n`);
@@ -373,13 +375,16 @@ router.delete("/:commentId", async (req, res, next) => {
   }
 });
 
-router.get("/comments-stream/:friendId", (req, res) => {
-  const { friendId } = req.params;
+router.get("/comments-stream/:loginUser", (req, res) => {
+  const loginUser = req.params.loginUser;
+  const friends = req.query.friends ? req.query.friends.split(",") : [];
 
   res.setHeader("Content-Type", "text/event-stream");
   res.setHeader("Cache-Control", "no-cache");
   res.setHeader("Connection", "keep-alive");
-  res.friendId = friendId;
+
+  res.loginUser = loginUser;
+  res.friends = friends;
 
   clientsSSE.push(res);
 
