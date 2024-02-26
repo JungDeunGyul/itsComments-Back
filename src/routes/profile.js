@@ -22,6 +22,13 @@ router.patch("/", s3Uploader.single("profileIcon"), async (req, res, next) => {
 
     if (req.body.nickname) {
       const changeNickname = req.body.nickname;
+
+      if (changeNickname.length < 2 || changeNickname.length > 20) {
+        return res
+          .status(400)
+          .json({ message: "Nickname must be between 2 and 20 characters." });
+      }
+
       user.nickname = changeNickname;
     }
 
