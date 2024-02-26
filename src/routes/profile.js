@@ -20,10 +20,16 @@ router.patch("/", s3Uploader.single("profileIcon"), async (req, res, next) => {
       return res.status(404).json({ message: "User not found" });
     }
 
-    const iconKey = req.file.key;
-    const profileIcon = `${process.env.CLOUD_FROUNT}/${iconKey}`;
+    if (req.body.nickname) {
+      const changeNickname = req.body.nickname;
+      user.nickname = changeNickname;
+    }
 
-    user.icon = profileIcon;
+    if (req.file && req.file.key) {
+      const iconKey = req.file.key;
+      const profileIcon = `${process.env.CLOUD_FROUNT}/${iconKey}`;
+      user.icon = profileIcon;
+    }
 
     await user.save();
 
