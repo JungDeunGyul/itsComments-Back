@@ -125,7 +125,10 @@ router.post(
 
           const updateUserData = await User.findById(publicUser)
             .populate("friends")
-            .populate({ path: "feedComments", populate: { path: "creator" } });
+            .populate({
+              path: "receivedComments",
+              populate: { path: "creator" },
+            });
 
           sendUserDataToClients(updateUserData, taggedFriends._id.toString());
         }
@@ -302,8 +305,29 @@ router.delete("/:commentId", async (req, res, next) => {
     const { userId } = req.body;
     const comment = await Comment.findById(commentId);
 
+    const removeReceviedUserId = req.query.userId;
+    const receviedCommentAction = req.query.action;
+
     if (!comment) {
       return res.status(404).json({ message: "No such comment was found." });
+    }
+
+    const removeCommentUser = await User.findById(removeReceviedUserId);
+
+    if (receviedCommentAction === "removeReceviedComment") {
+      removeCommentUser.receivedComments =
+        removeCommentUser.receivedComments.filter((removeCommentId) => {
+          return removeCommentId.toString() !== commentId;
+        });
+
+      await removeCommentUser.save();
+
+      res.status(200).json({
+        removeCommentUser,
+        message: "receivedComments is successfully deleted.",
+      });
+
+      return;
     }
 
     const user = await User.findById(comment.creator)

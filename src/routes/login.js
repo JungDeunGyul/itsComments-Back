@@ -30,7 +30,7 @@ router.post("/", async (req, res, next) => {
     let user = await User.findOne({ email: userData.email })
       .populate("friends")
       .populate({
-        path: "feedComments",
+        path: "receivedComments",
         populate: {
           path: "creator",
         },
