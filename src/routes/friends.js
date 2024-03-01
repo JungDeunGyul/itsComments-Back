@@ -38,6 +38,12 @@ router.patch("/addition", async function (req, res, next) {
     return res.status(400).json({ message: "Friend already exists." });
   }
 
+  if (user.mail === friendMail) {
+    return res
+      .status(400)
+      .json({ message: "You can't add yourself as a friend." });
+  }
+
   user.friends.push(friend);
 
   await user.save();
