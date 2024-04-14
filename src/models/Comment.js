@@ -17,7 +17,7 @@ const commentSchema = new mongoose.Schema({
     x: { type: String, required: true },
     y: { type: String, required: true },
   },
-  screenshot: { type: String, required: true },
+  screenshot: { type: String },
   allowPublic: { type: Boolean, required: true },
   publicUsers: [{ type: Schema.Types.ObjectId, ref: "User" }],
   recipientEmail: [{ type: String }],
