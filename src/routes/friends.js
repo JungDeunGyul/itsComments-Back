@@ -38,7 +38,7 @@ router.patch("/addition", async function (req, res, next) {
     return res.status(400).json({ message: "Friend already exists." });
   }
 
-  if (user.mail === friendMail) {
+  if (user.email === friendMail) {
     return res
       .status(400)
       .json({ message: "You can't add yourself as a friend." });
