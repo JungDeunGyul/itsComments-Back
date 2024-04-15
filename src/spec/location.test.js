@@ -2,12 +2,12 @@ const request = require("supertest");
 const app = require("../../app");
 const { Comment } = require("../models/Comment");
 const { User } = require("../models/User");
-const mongoose = require("mongoose");
 const { setupDB } = require("./setup");
 
 setupDB();
+
 describe("Location router tests", () => {
-  let user, publicComment, privateComment, pageUrl;
+  let user, pageUrl;
 
   beforeAll(async () => {
     user = await User.create({
