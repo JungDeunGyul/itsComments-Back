@@ -10,7 +10,7 @@ router.patch("/", s3Uploader.single("profileIcon"), async (req, res, next) => {
     const user = await User.findById(req.body.userId)
       .populate("friends")
       .populate({
-        path: "feedComments",
+        path: "receivedComments",
         populate: {
           path: "creator",
         },

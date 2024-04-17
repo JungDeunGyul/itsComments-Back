@@ -120,15 +120,15 @@ router.post(
             (friend) => friend._id === publicUser,
           );
 
-          taggedFriends.feedComments.push(newComment._id);
           taggedFriends.receivedComments.push(newComment._id);
+          taggedFriends.feedComments.push(newComment._id);
 
           await taggedFriends.save();
 
           const updateUserData = await User.findById(publicUser)
             .populate("friends")
             .populate({
-              path: "receivedComments",
+              path: "feedComments",
               populate: { path: "creator" },
             });
 
@@ -161,7 +161,7 @@ router.get("/:commentId", async (req, res, next) => {
       return res.status(404).json({ message: "User not found" });
     }
 
-    user.feedComments = user.feedComments.filter(
+    user.receivedComments = user.receivedComments.filter(
       (comment) => comment.toString() !== commentId,
     );
 
@@ -317,16 +317,17 @@ router.delete("/:commentId", async (req, res, next) => {
     const removeCommentUser = await User.findById(removeReceviedUserId);
 
     if (receviedCommentAction === "removeReceviedComment") {
-      removeCommentUser.receivedComments =
-        removeCommentUser.receivedComments.filter((removeCommentId) => {
+      removeCommentUser.feedComments = removeCommentUser.feedComments.filter(
+        (removeCommentId) => {
           return removeCommentId.toString() !== commentId;
-        });
+        },
+      );
 
       await removeCommentUser.save();
 
       res.status(200).json({
         removeCommentUser,
-        message: "receivedComments is successfully deleted.",
+        message: "feedComments is successfully deleted.",
       });
 
       return;
@@ -340,7 +341,7 @@ router.delete("/:commentId", async (req, res, next) => {
         },
       })
       .populate({
-        path: "receivedComments",
+        path: "feedComments",
         populate: {
           path: "creator",
         },
@@ -375,11 +376,11 @@ router.delete("/:commentId", async (req, res, next) => {
     for (const userId of comment.publicUsers) {
       const user = await User.findById(userId);
 
-      user.receivedComments = user.receivedComments?.filter(
+      user.feedComments = user.feedComments?.filter(
         (comment) => comment.toString() !== commentId,
       );
 
-      user.feedComments = user.feedComments?.filter(
+      user.receivedComments = user.receivedComments?.filter(
         (comment) => comment.toString() !== commentId,
       );
 
@@ -390,7 +391,7 @@ router.delete("/:commentId", async (req, res, next) => {
 
     const allComments = {
       createdComments: user.createdComments,
-      receivedComments: user.receivedComments,
+      feedComments: user.feedComments,
     };
 
     res
