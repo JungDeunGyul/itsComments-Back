@@ -190,96 +190,102 @@ router.get("/:commentId", async (req, res, next) => {
   }
 });
 
-router.patch("/recomments", async (req, res, next) => {
+router.post("/recomments", async (req, res, next) => {
   try {
-    const { userId, commentId, replyId, postDate, text, action } = req.body;
+    const { userId, commentId, postDate, text } = req.body;
 
-    if (action === "delete") {
-      const comment = await Comment.findById(commentId);
+    const user = await User.findById(userId);
 
-      if (!comment) {
-        return res.status(404).json({ message: "No such comment was found." });
-      }
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
 
-      const user = await User.findById(comment.creator);
+    const comment = await Comment.findById(commentId);
 
-      if (!user) {
-        return res.status(404).json({ message: "Creator not found" });
-      }
+    if (!comment) {
+      return res.status(404).json({ message: "Comment not found" });
+    }
 
-      const recomment = comment.reComments.find(
-        (recomment) => recomment._id.toString() === replyId,
-      );
+    const reComment = {
+      text,
+      creator: user._id,
+      postDate,
+    };
 
-      if (!recomment) {
-        return res
-          .status(404)
-          .json({ message: "No such recomment was found." });
-      }
+    comment.reComments.push(reComment);
+    await comment.save();
 
-      const isRecommentCreator = recomment.creator.toString() === userId;
-      const isCommentCreator = comment.creator.toString() === userId;
+    user.repliedComments.push({
+      comment: comment._id,
+      text,
+    });
 
-      if (isRecommentCreator || isCommentCreator) {
-        comment.reComments = comment.reComments.filter(
-          (recomment) => recomment._id.toString() !== replyId,
-        );
+    await user.save();
 
-        await comment.save();
-
-        const writer = await User.findById(recomment.creator);
-
-        if (!writer) {
-          return res
-            .status(404)
-            .json({ message: "Recomment creator not found." });
-        }
-
-        writer.repliedComments = writer.repliedComments.filter(
-          (reply) => reply.comment.toString() !== commentId,
-        );
-
-        await writer.save();
-
-        const updateComment = await Comment.findById(commentId)
-          .populate("creator")
-          .populate({
-            path: "reComments",
-            populate: { path: "creator" },
-          });
-
-        sendUpdatedCommentToClients(updateComment, commentId);
-
-        res.status(200).json({ message: "Recomment is successfully deleted." });
-      }
-    } else if (action === "update") {
-      const user = await User.findById(userId);
-
-      if (!user) {
-        return res.status(404).json({ message: "User not found" });
-      }
-
-      const comment = await Comment.findById(commentId);
-
-      if (!comment) {
-        return res.status(404).json({ message: "Comment not found" });
-      }
-
-      const reComment = {
-        text,
-        creator: user._id,
-        postDate,
-      };
-
-      comment.reComments.push(reComment);
-      await comment.save();
-
-      user.repliedComments.push({
-        comment: comment._id,
-        text,
+    const updateComment = await Comment.findById(commentId)
+      .populate("creator")
+      .populate({
+        path: "reComments",
+        populate: { path: "creator" },
       });
 
-      await user.save();
+    sendUpdatedCommentToClients(updateComment, commentId);
+
+    res
+      .status(200)
+      .json({ message: "Recomment created successfully", reComment });
+  } catch (error) {
+    return res.status(400).json({ message: "Failed to delete a comment." });
+  }
+});
+
+router.delete("/recomments", async (req, res, next) => {
+  try {
+    const { userId, commentId, replyId, postDate, text } = req.body;
+
+    const comment = await Comment.findById(commentId);
+
+    if (!comment) {
+      return res.status(404).json({ message: "No such comment was found." });
+    }
+
+    const user = await User.findById(comment.creator);
+
+    if (!user) {
+      return res.status(404).json({ message: "Creator not found" });
+    }
+
+    const recomment = comment.reComments.find(
+      (recomment) => recomment._id.toString() === replyId,
+    );
+
+    if (!recomment) {
+      return res.status(404).json({ message: "No such recomment was found." });
+    }
+
+    const isRecommentCreator = recomment.creator.toString() === userId;
+    const isCommentCreator = comment.creator.toString() === userId;
+
+    if (isRecommentCreator || isCommentCreator) {
+      comment.reComments = comment.reComments.filter(
+        (recomment) => recomment._id.toString() !== replyId,
+      );
+
+      await comment.save();
+
+      const writer = await User.findById(recomment.creator);
+
+      if (!writer) {
+        return res
+          .status(404)
+          .json({ message: "Recomment creator not found." });
+      }
+
+      writer.repliedComments = writer.repliedComments.filter(
+        (reply) => reply.comment.toString() !== commentId,
+      );
+
+      await writer.save();
 
       const updateComment = await Comment.findById(commentId)
         .populate("creator")
@@ -290,9 +296,7 @@ router.patch("/recomments", async (req, res, next) => {
 
       sendUpdatedCommentToClients(updateComment, commentId);
 
-      res
-        .status(200)
-        .json({ message: "Recomment created successfully", reComment });
+      res.status(200).json({ message: "Recomment is successfully deleted." });
     } else {
       return res.status(400).json({ message: "Invalid action." });
     }
