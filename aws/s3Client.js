@@ -1,10 +1,10 @@
 const { S3Client } = require("@aws-sdk/client-s3");
 
 const s3client = new S3Client({
-  region: "ap-northeast-2",
+  region: process.env.AWS_REGION,
   credentials: {
-    accessKeyId: process.env.S3_ACCESS_KEY,
-    secretAccessKey: process.env.S3_SECRET_KEY,
+    accessKeyId: process.env.AWS_ACCESS_KEY,
+    secretAccessKey: process.env.AWS_SECRET_KEY,
   },
 });
 
