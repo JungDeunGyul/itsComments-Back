@@ -7,8 +7,9 @@ const s3Uploader = multer({
   storage: multerS3({
     s3: s3client,
     bucket: process.env.AWS_BUCKET,
+    acl: "public-read",
     key: function (req, file, cb) {
-      cb(null, Date.now().toString());
+      cb(null, Date.now().toString() + ".png");
     },
   }),
 });
