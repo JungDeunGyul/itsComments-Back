@@ -13,15 +13,15 @@ async function sendMail(recipientEmail, userData, text, postUrl, screenshot) {
     const html = `
       <p>작성자 메일: ${userData}</p>
       <p>${text}</p>
-      <a href=${postUrl}>${postUrl}</a>
+      <a href=${postUrl}>해당 페이지 링크</a>
       <br>
-      <img src=${screenshot} alt="이미지" style="max-width: 1200px; width: 100%;">
+      <img src=${screenshot} alt="img" style="max-width: 1200px; width: 100%;">
     `;
 
     const mailOptions = {
       from: process.env.EMAIL_ID,
       to: recipientEmail,
-      subject: "its comments mail",
+      subject: "add comments mail",
       html,
     };
 

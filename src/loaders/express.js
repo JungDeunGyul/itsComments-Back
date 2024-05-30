@@ -16,7 +16,6 @@ async function expressLoader(app) {
       origin: [
         process.env.CLIENT_URL,
         process.env.EXTENSION_URL,
-        process.env.SECOND_EXTENSION_URL,
         process.env.ACCESSIBLE_URL_GOOGLE,
         process.env.ACCESSIBLE_URL_NAVER,
         process.env.ACCESSIBLE_URL_DAUM,
